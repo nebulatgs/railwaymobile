@@ -1,31 +1,45 @@
-FROM debian:stretch-slim
+FROM nebulatgs/android-devcontainer
 
-# Hack to get openjdk to install in a container
-RUN mkdir -p /usr/share/man/man1 \
-    && mkdir -p /usr/share/man/man7
+# FROM mcr.microsoft.com/vscode/devcontainers/universal:linux as builder
+# USER root
 
-# Apt
-RUN apt update && apt install -y curl wget git xz-utils lib32stdc++6 unzip openjdk-8-jdk-headless
+# # Magic DNS in a container where /etc/resolv.conf is a bind mount needed
+# # extra support, currently on a development branch.
+# WORKDIR /go/src/tailscale
+# COPY . ./
+# RUN git clone https://github.com/tailscale/tailscale.git && cd tailscale && \
+#     go mod download && \
+#     go install -mod=readonly ./cmd/tailscaled ./cmd/tailscale
+# COPY . ./
 
-# Android SDK
-RUN wget https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip 
-RUN mkdir android-sdk && unzip /sdk-tools-linux-4333796.zip -d android-sdk
-RUN rm /sdk-tools-linux-4333796.zip
-ENV ANDROID_HOME="/android-sdk"
-ENV PATH="/android-sdk/tools/bin:/android-sdk/build-tools:/android-sdk/platform-tools:${PATH}"
 
-# SDK manager
-RUN yes | sdkmanager --licenses
-RUN sdkmanager "platforms;android-28" "platform-tools" "build-tools;28.0.3"
+# FROM mcr.microsoft.com/vscode/devcontainers/universal:linux
 
-# Flutter
-RUN wget https://storage.googleapis.com/flutter_infra/releases/stable/linux/flutter_linux_v1.5.4-hotfix.2-stable.tar.xz
-RUN tar xf flutter_linux_v1.5.4-hotfix.2-stable.tar.xz 
-RUN rm flutter_linux_v1.5.4-hotfix.2-stable.tar.xz
-ENV PATH="/flutter/bin:${PATH}"
+# USER root
 
-RUN flutter config --no-analytics
+# RUN apt-get update && apt-get install -y curl gpg dnsutils
+# COPY tailscaled /etc/init.d
+# COPY --from=builder /go/bin/tailscaled /usr/sbin/tailscaled
+# COPY --from=builder /go/bin/tailscale /usr/bin/tailscale
 
-# Set a useful default shell
-ENV SHELL /bin/bash
+# RUN mkdir -p /var/run/tailscale /var/cache/tailscale /var/lib/tailscale
+
+# # Hack to get openjdk to install in a container
+# RUN mkdir -p /usr/share/man/man1 \
+#     && mkdir -p /usr/share/man/man7
+
+# # Android SDK
+# # RUN wget https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip
+# RUN wget https://dl.google.com/android/repository/commandlinetools-linux-7583922_latest.zip 
+# RUN mkdir android-sdk && unzip /commandlinetools-linux-7583922_latest.zip -d android-sdk
+# RUN rm /commandlinetools-linux-7583922_latest.zip 
+# ENV ANDROID_HOME="/android-sdk"
+# ENV PATH="/android-sdk/tools/bin:/android-sdk/build-tools:/android-sdk/platform-tools:${PATH}"
+
+# # SDK manager
+# RUN yes | sdkmanager --licenses
+# RUN sdkmanager "platforms;android-30" "platform-tools" "build-tools;30.0.0"
+
+# # Set a useful default shell
+# ENV SHELL /bin/bash
 
